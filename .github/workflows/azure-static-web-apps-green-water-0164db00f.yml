@@ -1,22 +1,45 @@
-name: Despliegue a Azure
+name: Azure Static Web Apps CI/CD
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  deploy_job:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    name: Desplegar Landing Page
+    name: Build and Deploy Job
     steps:
-      - name: Descargar codigo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
+          
+      - name: Generar Token de Identidad (OIDC)
+        uses: actions/github-script@v6
+        id: idtoken
+        with:
+          script: |
+            return await core.getIDToken()
 
-      - name: Subir a Azure
+      - name: Build And Deploy
+        id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_WATER_0164DB00F }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/"
+          api_location: ""
+          output_location: ""
           skip_app_build: true
+          github_id_token: ${{ steps.idtoken.outputs.result }}
