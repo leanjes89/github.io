@@ -19,13 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
           
       - name: Generar Token de Identidad (OIDC)
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: idtoken
         with:
           script: |
